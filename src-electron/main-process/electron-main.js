@@ -1,22 +1,91 @@
-import { app, BrowserWindow, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme, screen } from "electron";
 
 try {
-  if (process.platform === 'win32' && nativeTheme.shouldUseDarkColors === true) {
-    require('fs').unlinkSync(require('path').join(app.getPath('userData'), 'DevTools Extensions'))
+  if (
+    process.platform === "win32" &&
+    nativeTheme.shouldUseDarkColors === true
+  ) {
+    require("fs").unlinkSync(
+      require("path").join(app.getPath("userData"), "DevTools Extensions")
+    );
   }
-} catch (_) { }
+} catch (_) {}
 
 /**
  * Set `__statics` path to static files in production;
  * The reason we are setting it here is that the path needs to be evaluated at runtime
  */
 if (process.env.PROD) {
-  global.__statics = __dirname
+  global.__statics = __dirname;
 }
 
-let mainWindow
+//function to create a window for each display (discriminating between main a d secondary)
+function createAllWindows() {
+  //Get all connected displays
+  let displays = screen.getAllDisplays();
+  // Store all windows for later use
+  let windows = [];
+  // Iterate displays and create windows
+  displays.forEach(display => {
+    if (display.bounds.x == 0) {
+      windows.push(createMainWindow(display));
+    } else {
+      windows.push(createSecondaryWindow(display));
+    }
+  }); // displays.foreach
+} // createAllWindows
 
-function createWindow () {
+// Returns the main window which in most cases will be the only one
+let mainWindow;
+function createMainWindow(display) {
+  let { width, height } = display.workAreaSize;
+  mainWindow = new BrowserWindow({
+    width: width,
+    height: height,
+    frame: false,
+    fullscreen: true,
+    kiosk: true,
+    webPreferences: {
+      // Change from /quasar.conf.js > electron > nodeIntegration;
+      // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
+      nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
+      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION
+
+      // More info: /quasar-cli/developing-electron-apps/electron-preload-script
+      // preload: path.resolve(__dirname, 'electron-preload.js')
+    }
+  }); // mainWindow
+  mainWindow.loadURL(process.env.APP_URL);
+  return mainWindow;
+} // createMainWindow
+
+// Returns a dummy window to fill up the space and make unusable not primary
+// display
+function createSecondaryWindow(display) {
+  let { width, height } = display.workAreaSize;
+  let window;
+  window = new BrowserWindow({
+    width: width,
+    height: height,
+    frame: false,
+    fullscreen: true,
+    kiosk: true,
+    x: display.bounds.x + 50,
+    y: display.bounds.y +50,
+    webPreferences: {
+      // Change from /quasar.conf.js > electron > nodeIntegration;
+      // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
+      nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
+      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION
+
+      // More info: /quasar-cli/developing-electron-apps/electron-preload-script
+      // preload: path.resolve(__dirname, 'electron-preload.js')
+    }
+  }); // window
+  return window;
+} // createSecondaryWindow
+
+function createWindow() {
   /**
    * Initial window options
    */
@@ -29,30 +98,30 @@ function createWindow () {
       // Change from /quasar.conf.js > electron > nodeIntegration;
       // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
       nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
-      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION,
+      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION
 
       // More info: /quasar-cli/developing-electron-apps/electron-preload-script
       // preload: path.resolve(__dirname, 'electron-preload.js')
     }
-  })
+  });
 
-  mainWindow.loadURL(process.env.APP_URL)
+  mainWindow.loadURL(process.env.APP_URL);
 
-  mainWindow.on('closed', () => {
-    mainWindow = null
-  })
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
 }
 
-app.on('ready', createWindow)
+app.on("ready", createAllWindows);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
   }
-})
+});
 
-app.on('activate', () => {
+app.on("activate", () => {
   if (mainWindow === null) {
-    createWindow()
+    createWindow();
   }
-})
+});
