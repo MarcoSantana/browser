@@ -1,4 +1,12 @@
-import { app, BrowserWindow, nativeTheme, screen } from "electron";
+import {
+  app,
+  BrowserWindow,
+  nativeTheme,
+  screen,
+  globalShortcut,
+  dialog
+} from "electron";
+import { log } from "console";
 
 try {
   if (
@@ -56,6 +64,13 @@ function createMainWindow(display) {
     }
   }); // mainWindow
   mainWindow.loadURL(process.env.APP_URL);
+  mainWindow.on("beforeunload", event => {
+    console.log("event :>> ", event);
+  });
+  mainWindow.on("close", event => {
+    let exit = confirmExit();
+    return exit;
+  });
   return mainWindow;
 } // createMainWindow
 
@@ -71,7 +86,7 @@ function createSecondaryWindow(display) {
     fullscreen: true,
     kiosk: true,
     x: display.bounds.x + 50,
-    y: display.bounds.y +50,
+    y: display.bounds.y + 50,
     webPreferences: {
       // Change from /quasar.conf.js > electron > nodeIntegration;
       // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
@@ -112,7 +127,11 @@ function createWindow() {
   });
 }
 
-app.on("ready", createAllWindows);
+// app.on("ready", createAllWindows);
+app.on("ready", async () => {
+  createAllWindows();
+  let appGlobalShortcuts = setGlobalShortcuts();
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -125,3 +144,80 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+function setGlobalShortcuts() {
+  // Reset
+  globalShortcut.unregisterAll();
+  // Ctrl+Tab to avoid tab switch and whatever
+  globalShortcut.register("CmdOrCtrl+Tab", () => {
+    console.log("CmdOrCtrl+Tab was pressed");
+    return;
+  });
+  // Alt + tab (switch windows)
+  globalShortcut.register("Alt+Tab", () => {
+    console.log("Alt+Tab was pressed");
+    return;
+  });
+  // PrintScreen to avoid screenshots
+  globalShortcut.register("PrintScreen", () => {
+    console.log("PrintScreen was pressed");
+    return;
+  });
+  // Super because super
+  globalShortcut.register("Super", () => {
+    console.log("Super was pressed");
+    return;
+  });
+
+  globalShortcut.unregister("CmdOrCtrl+q");
+  globalShortcut.unregister("Ctrl+q");
+
+  globalShortcut.register("Ctrl+q", () => {
+    //asynchronous usage
+    let options = {
+      buttons: ["Yes", "No", "Cancel"],
+      message: "Do you really want to quit? from my local shortcuts"
+    };
+    let foo = dialog.showMessageBox(mainWindow, options, response => {
+      console.log("response :>> ", response);
+
+      if (response === 0) {
+        console.log("Response 0 selected");
+        confirmExit();
+        // app.quit();
+      } else if (response === 1) {
+        console.log("Response 1 selected");
+      } else if (response === 2) {
+        console.log("Cancel button pressed");
+      }
+    });
+    return foo;
+  });
+
+  console.log("globalShortcuts set");
+
+  return true;
+}
+
+function confirmExit() {
+  //asynchronous usage
+  let options = {
+    buttons: ["Yes", "No", "Cancel"],
+    message: "Do you really want to quit? from my function"
+  };
+  let foo = dialog.showMessageBox(mainWindow, options, response => {
+    console.log("response :>> ", response);
+    console.log("options :>> ", options);
+
+    if (response === 0) {
+      console.log("Response 0 selected");
+      app.quit();
+      mainWindow.quit();
+    } else if (response === 1) {
+      console.log("Response 1 selected");
+      event.preventDefault();
+    } else if (response === 2) {
+      console.log("Cancel button pressed");
+    }
+  });
+}
