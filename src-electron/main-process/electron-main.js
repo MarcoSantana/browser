@@ -2,11 +2,10 @@ import {
   app,
   BrowserWindow,
   nativeTheme,
-  screen,
-  globalShortcut,
-  dialog
-} from "electron";
+  screen} from "electron";
 import { log } from "console";
+import { confirmExit } from "./confirmExit";
+import { setGlobalShortcuts } from "./setGlobalShortcuts";
 
 try {
   if (
@@ -44,7 +43,7 @@ function createAllWindows() {
 } // createAllWindows
 
 // Returns the main window which in most cases will be the only one
-let mainWindow;
+export let mainWindow;
 function createMainWindow(display) {
   let { width, height } = display.workAreaSize;
   mainWindow = new BrowserWindow({
@@ -68,8 +67,7 @@ function createMainWindow(display) {
     console.log("event :>> ", event);
   });
   mainWindow.on("close", event => {
-    let exit = confirmExit();
-    return exit;
+    return confirmExit();
   });
   return mainWindow;
 } // createMainWindow
@@ -130,7 +128,7 @@ function createWindow() {
 // app.on("ready", createAllWindows);
 app.on("ready", async () => {
   createAllWindows();
-  let appGlobalShortcuts = setGlobalShortcuts();
+  setGlobalShortcuts();
 });
 
 app.on("window-all-closed", () => {
@@ -145,79 +143,4 @@ app.on("activate", () => {
   }
 });
 
-function setGlobalShortcuts() {
-  // Reset
-  globalShortcut.unregisterAll();
-  // Ctrl+Tab to avoid tab switch and whatever
-  globalShortcut.register("CmdOrCtrl+Tab", () => {
-    console.log("CmdOrCtrl+Tab was pressed");
-    return;
-  });
-  // Alt + tab (switch windows)
-  globalShortcut.register("Alt+Tab", () => {
-    console.log("Alt+Tab was pressed");
-    return;
-  });
-  // PrintScreen to avoid screenshots
-  globalShortcut.register("PrintScreen", () => {
-    console.log("PrintScreen was pressed");
-    return;
-  });
-  // Super because super
-  globalShortcut.register("Super", () => {
-    console.log("Super was pressed");
-    return;
-  });
 
-  globalShortcut.unregister("CmdOrCtrl+q");
-  globalShortcut.unregister("Ctrl+q");
-
-  globalShortcut.register("Ctrl+q", () => {
-    //asynchronous usage
-    let options = {
-      buttons: ["Yes", "No", "Cancel"],
-      message: "Do you really want to quit? from my local shortcuts"
-    };
-    let foo = dialog.showMessageBox(mainWindow, options, response => {
-      console.log("response :>> ", response);
-
-      if (response === 0) {
-        console.log("Response 0 selected");
-        confirmExit();
-        // app.quit();
-      } else if (response === 1) {
-        console.log("Response 1 selected");
-      } else if (response === 2) {
-        console.log("Cancel button pressed");
-      }
-    });
-    return foo;
-  });
-
-  console.log("globalShortcuts set");
-
-  return true;
-}
-
-function confirmExit() {
-  //asynchronous usage
-  let options = {
-    buttons: ["Yes", "No", "Cancel"],
-    message: "Do you really want to quit? from my function"
-  };
-  let foo = dialog.showMessageBox(mainWindow, options, response => {
-    console.log("response :>> ", response);
-    console.log("options :>> ", options);
-
-    if (response === 0) {
-      console.log("Response 0 selected");
-      app.quit();
-      mainWindow.quit();
-    } else if (response === 1) {
-      console.log("Response 1 selected");
-      event.preventDefault();
-    } else if (response === 2) {
-      console.log("Cancel button pressed");
-    }
-  });
-}
