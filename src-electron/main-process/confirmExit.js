@@ -2,6 +2,7 @@ import { app, dialog } from "electron";
 import { mainWindow } from "./electron-main";
 export function confirmExit() {
   let options = {
+    type: "question",
     buttons: ["Si", "No", "Cancelar"],
     message: "¿En realidad quieres cerrar la aplicación?"
   };
