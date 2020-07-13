@@ -1,33 +1,23 @@
-import {
-  app,
-
-
-
-
-  dialog
-} from "electron";
+import { app, dialog } from "electron";
 import { mainWindow } from "./electron-main";
-export async function  confirmExit() {
-  //asynchronous usage
+export function confirmExit() {
   let options = {
-    buttons: ["Yes", "No", "Cancel"],
-    message: "Do you really want to quit? from my function"
+    buttons: ["Si", "No", "Cancelar"],
+    message: "¿En realidad quieres cerrar la aplicación?"
   };
-  let foo = dialog.showMessageBox(mainWindow, options, response => {
-    console.log("response :>> ", response);
-    console.log("options :>> ", options);
+  dialog.showMessageBox(mainWindow, options, response => {
+    console.log("response 🔈:>> ", response);
+    console.log("options :notepad_spiral::>> ", options);
 
     if (response === 0) {
-      console.log("Response 0 selected");
       app.quit();
-      mainWindow.quit();
-    }
-    else if (response === 1) {
+      // mainWindow.quit();
+    } else if (response === 1) {
       console.log("Response 1 selected");
       event.preventDefault();
-    }
-    else if (response === 2) {
+    } else if (response === 2) {
       console.log("Cancel button pressed");
-    }
+      return;
+    } // if
   });
 }

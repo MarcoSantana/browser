@@ -1,8 +1,4 @@
-import {
-  app,
-  BrowserWindow,
-  nativeTheme,
-  screen} from "electron";
+import { app, BrowserWindow, nativeTheme, screen } from "electron";
 import { log } from "console";
 import { confirmExit } from "./confirmExit";
 import { setGlobalShortcuts } from "./setGlobalShortcuts";
@@ -126,6 +122,16 @@ function createWindow() {
 }
 
 // app.on("ready", createAllWindows);
+app.on("browser-window-blur", event => {
+  console.log("browser-window-blur:>>", event);
+  event.preventDefault();
+});
+
+app.on("before-quit", event => {
+  console.log("before-quit:>> ", event);
+  event.preventDefault();
+  confirmExit();
+});
 app.on("ready", async () => {
   createAllWindows();
   setGlobalShortcuts();
@@ -142,5 +148,3 @@ app.on("activate", () => {
     createWindow();
   }
 });
-
-
