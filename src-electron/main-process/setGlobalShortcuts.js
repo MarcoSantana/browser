@@ -58,3 +58,11 @@ export function setGlobalShortcuts() {
 
   return true;
 }
+
+/*Notes
+ *
+ * So far none of this is working specially in Windows
+ *
+ * Some reference:
+ * https://stackoverflow.com/questions/45138838/disable-keyboard-shortcuts-alt-tab-in-electron-application
+ * */

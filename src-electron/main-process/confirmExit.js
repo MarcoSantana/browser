@@ -7,7 +7,7 @@ import {
   dialog
 } from "electron";
 import { mainWindow } from "./electron-main";
-export function confirmExit() {
+export async function  confirmExit() {
   //asynchronous usage
   let options = {
     buttons: ["Yes", "No", "Cancel"],
