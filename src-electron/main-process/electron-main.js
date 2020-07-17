@@ -1,6 +1,7 @@
 import { app, BrowserWindow, nativeTheme, screen, dialog } from "electron";
 import { log } from "console";
-import { confirmExit } from "./confirmExit";
+// import { confirmExit } from "./confirmExit";
+const confirmExit = require("./confirmExit");
 import { setGlobalShortcuts } from "./setGlobalShortcuts";
 
 try {
@@ -62,36 +63,6 @@ function createMainWindow(display) {
   // Manage window events
   mainWindow.on("beforeunload", event => {
     console.log("event beforeunload:>> ", event);
-    // return confirmExit();
-  });
-  mainWindow.on("close", event => {
-    // console.log("event close:>> ", event);
-
-    let options = {
-      type: "question",
-      buttons: ["Si", "No", "Cancelar"],
-      message: "¿En realidad quieres cerrar la aplicación?",
-      normalizeAccessKey: true
-    };
-
-    let res = dialog.showMessageBoxSync(mainWindow, options, response => {
-      console.log("response :>> ", response);
-      console.log("options :>> ", options);
-      return response;
-    }); // dialogMessageBox
-
-    if (res === 0) {
-      console.log("Selected 0 i.e. Si");
-      // mainWindow.destroy();
-      // app.quit();
-    } else if (res === 1) {
-      event.preventDefault();
-      console.log("Response 1 selected");
-    } else if (res === 2) {
-      console.log("Cancel button pressed");
-    } // if
-    console.log("res :>>", res);
-    return res;
     // return confirmExit();
   });
   mainWindow.on("before-quit", () => {
@@ -169,9 +140,31 @@ app.on("browser-window-blur", event => {
 });
 
 app.on("before-quit", event => {
-  // console.log("before-quit:>> ", event);
-  // confirmExit();
+  console.log("event close:>> ", event);
+  let options = {
+    type: "question",
+    buttons: ["Si", "No"],
+    message: "¿En realidad quieres cerrar la aplicación?",
+    normalizeAccessKey: true
+  };
+
+  let res = dialog.showMessageBoxSync(null, options, response => {
+    console.log("response :>> ", response);
+    console.log("options :>> ", options);
+    return response;
+  }); // dialogMessageBox
+
+  if (res === 0) {
+    console.log("Selected 0 i.e. Si");
+  } // if 0
+  if (res === 1) {
+    event.preventDefault();
+    return false;
+  } // if 1
+  console.log("res :>>", res);
+  return res;
 });
+
 app.on("ready", async () => {
   createAllWindows();
   // setGlobalShortcuts();
@@ -185,6 +178,6 @@ app.on("window-all-closed", () => {
 
 app.on("activate", () => {
   if (mainWindow === null) {
-    createWindow();
+    createAllWindows();
   }
 });
