@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme, screen } from "electron";
+import { app, BrowserWindow, nativeTheme, screen, dialog } from "electron";
 import { log } from "console";
 import { confirmExit } from "./confirmExit";
 import { setGlobalShortcuts } from "./setGlobalShortcuts";
@@ -45,9 +45,9 @@ function createMainWindow(display) {
   mainWindow = new BrowserWindow({
     width: width,
     height: height,
-    frame: false,
-    fullscreen: true,
-    kiosk: true,
+    frame: true,
+    fullscreen: false,
+    kiosk: false,
     webPreferences: {
       // Change from /quasar.conf.js > electron > nodeIntegration;
       // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
@@ -59,11 +59,48 @@ function createMainWindow(display) {
     }
   }); // mainWindow
   mainWindow.loadURL(process.env.APP_URL);
+  // Manage window events
   mainWindow.on("beforeunload", event => {
-    console.log("event :>> ", event);
+    console.log("event beforeunload:>> ", event);
+    // return confirmExit();
   });
   mainWindow.on("close", event => {
-    return confirmExit();
+    // console.log("event close:>> ", event);
+
+    let options = {
+      type: "question",
+      buttons: ["Si", "No", "Cancelar"],
+      message: "¿En realidad quieres cerrar la aplicación?",
+      normalizeAccessKey: true
+    };
+
+    let res = dialog.showMessageBoxSync(mainWindow, options, response => {
+      console.log("response :>> ", response);
+      console.log("options :>> ", options);
+      return response;
+    }); // dialogMessageBox
+
+    if (res === 0) {
+      console.log("Selected 0 i.e. Si");
+      // mainWindow.destroy();
+      // app.quit();
+    } else if (res === 1) {
+      event.preventDefault();
+      console.log("Response 1 selected");
+    } else if (res === 2) {
+      console.log("Cancel button pressed");
+    } // if
+    console.log("res :>>", res);
+    return res;
+    // return confirmExit();
+  });
+  mainWindow.on("before-quit", () => {
+    console.log("event beforequit:>> ", event);
+    // return confirmExit();
+  });
+  mainWindow.on("ready", () => {
+    console.log("event ready:>> ", event);
+    setGlobalShortcuts();
   });
   return mainWindow;
 } // createMainWindow
@@ -78,7 +115,7 @@ function createSecondaryWindow(display) {
     height: height,
     frame: false,
     fullscreen: true,
-    kiosk: true,
+    kiosk: false,
     x: display.bounds.x + 50,
     y: display.bounds.y + 50,
     webPreferences: {
@@ -91,6 +128,7 @@ function createSecondaryWindow(display) {
       // preload: path.resolve(__dirname, 'electron-preload.js')
     }
   }); // window
+  setGlobalShortcuts();
   return window;
 } // createSecondaryWindow
 
@@ -121,20 +159,22 @@ function createWindow() {
   });
 }
 
+function showAlert(message) {
+  dialog.showAlert(message);
+}
+
 // app.on("ready", createAllWindows);
 app.on("browser-window-blur", event => {
-  console.log("browser-window-blur:>>", event);
-  event.preventDefault();
+  // event.preventDefault();
 });
 
 app.on("before-quit", event => {
-  console.log("before-quit:>> ", event);
-  event.preventDefault();
-  confirmExit();
+  // console.log("before-quit:>> ", event);
+  // confirmExit();
 });
 app.on("ready", async () => {
   createAllWindows();
-  setGlobalShortcuts();
+  // setGlobalShortcuts();
 });
 
 app.on("window-all-closed", () => {

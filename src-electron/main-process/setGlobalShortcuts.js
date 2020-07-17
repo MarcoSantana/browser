@@ -1,58 +1,44 @@
-import {
-  globalShortcut,
-  dialog
-} from "electron";
+import { globalShortcut, dialog } from "electron";
 import { confirmExit } from "./confirmExit";
 import { mainWindow } from "./electron-main";
 export function setGlobalShortcuts() {
   // Reset
   globalShortcut.unregisterAll();
   // Ctrl+Tab to avoid tab switch and whatever
-  globalShortcut.register("CmdOrCtrl+Tab", () => {
+  // globalShortcut.register("CmdOrCtrl+Tab", () => {
+  globalShortcut.register("cmdorctrl+tab", () => {
     console.log("CmdOrCtrl+Tab was pressed");
     return;
   });
   // Alt + tab (switch windows)
-  globalShortcut.register("Alt+Tab", () => {
+  globalShortcut.register("alt+tab", () => {
     console.log("Alt+Tab was pressed");
-    return;
+    dialog.showMessageBox("Alt+Tab was pressed");
+    return false;
   });
   // PrintScreen to avoid screenshots
-  globalShortcut.register("PrintScreen", () => {
+  globalShortcut.register("printscreen", () => {
     console.log("PrintScreen was pressed");
-    return;
+    return false;
   });
   // Super because super
-  globalShortcut.register("Super", () => {
+  globalShortcut.register("super", () => {
     console.log("Super was pressed");
-    return;
+    return false;
   });
 
-  globalShortcut.unregister("CmdOrCtrl+q");
-  globalShortcut.unregister("Ctrl+q");
+  // globalShortcut.unregister("CmdOrCtrl+q");
+  // globalShortcut.unregister("CmdOrCtrl+q");
+  // globalShortcut.unregister("ctrl+q");
 
-  globalShortcut.register("Ctrl+q", () => {
-    //asynchronous usage
-    let options = {
-      buttons: ["Yes", "No", "Cancel"],
-      message: "Do you really want to quit? from my local shortcuts"
-    };
-    let foo = dialog.showMessageBox(mainWindow, options, response => {
-      console.log("response :>> ", response);
+  // globalShortcut.register("ctrl+q", () => {
+  //   console.log("ctrl+q was pressed");
+  //   app.quit();
+  // });
 
-      if (response === 0) {
-        console.log("Response 0 selected");
-        confirmExit();
-      }
-      else if (response === 1) {
-        console.log("Response 1 selected");
-      }
-      else if (response === 2) {
-        console.log("Cancel button pressed");
-      }
-    });
-    return foo;
-  });
+  // globalShortcut.register("cmdorctrl+q", () => {
+  //   app.quit();
+  // });
 
   console.log("globalShortcuts set");
 
